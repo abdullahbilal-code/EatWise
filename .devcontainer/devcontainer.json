@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schema/devcontainer.json",
   "name": "EatWise Codespace",
   "build": { "dockerfile": "Dockerfile" },
   "settings": { "terminal.integrated.shell.linux": "/bin/bash" },
