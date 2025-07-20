@@ -28,3 +28,13 @@ exports.getAppointmentsByUser = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch appointments' });
   }
 };
+exports.getAllAppointmentsForAdmin = async (req, res) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate('patient', 'name email')
+      .populate('nutritionist', 'name email');
+    res.json(appointments);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch all appointments' });
+  }
+};
