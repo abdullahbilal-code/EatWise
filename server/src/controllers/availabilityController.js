@@ -16,3 +16,13 @@ exports.setAvailability = async (req, res) => {
     res.status(500).json({ error: 'Failed to set availability' });
   }
 };
+
+exports.getAvailabilityByNutritionist = async (req, res) => {
+  try {
+    const nutritionistId = req.params.id;
+    const availability = await Availability.find({ nutritionist: nutritionistId });
+    res.json(availability);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch availability' });
+  }
+};
