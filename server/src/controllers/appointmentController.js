@@ -11,3 +11,24 @@ const appointmentSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  date: {
+    type: String, // e.g., '2025-07-22'
+    required: true
+  },
+  time: {
+    type: String, // e.g., '10:00'
+    required: true
+  },
+  details: {
+    biologicalInfo: String,
+    nutritionGoal: String,
+    notes: String
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'confirmed', 'rejected'],
+    default: 'pending'
+  }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Appointment', appointmentSchema);
