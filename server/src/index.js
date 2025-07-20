@@ -31,3 +31,8 @@ mongoose
   .catch(err => {
     console.error('MongoDB connection error:', err);
   });
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+
+app.use('/api/auth', authRoutes);
