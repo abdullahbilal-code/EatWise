@@ -4,6 +4,10 @@ const helmet  = require('helmet');
 const cors    = require('cors');
 const morgan  = require('morgan');
 const mongoose = require('mongoose');
+const appointmentRoutes = require('./routes/appointmentRoutes');
+const availabilityRoutes = require('./routes/availabilityRoutes');
+const userRoutes = require('./routes/userRoutes');
+
 
 const app = express();
 
@@ -36,3 +40,8 @@ mongoose
 const authRoutes = require('./routes/authRoutes');
 
 app.use('/api/auth', authRoutes);
+
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/availability', availabilityRoutes);
+app.use('/api/users', userRoutes);
+

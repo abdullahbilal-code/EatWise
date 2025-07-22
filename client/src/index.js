@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+const appointmentRoutes = require('./routes/appointmentRoutes');
+const availabilityRoutes = require('./routes/availabilityRoutes');
+const userRoutes = require('./routes/userRoutes');
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
