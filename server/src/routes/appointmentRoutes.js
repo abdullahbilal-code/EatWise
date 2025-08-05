@@ -1,19 +1,16 @@
+// routes/appointmentRoutes.js
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
 const {
-  bookAppointment,
-  getAppointmentsByUser,
-  getAllAppointmentsForAdmin,
+  createAppointment,
+  getAppointmentsForNutritionist
 } = require('../controllers/appointmentController');
 
-// Patient books an appointment
-router.post('/', verifyToken, bookAppointment);
+// POST: create appointment proposal
+router.post('/', verifyToken, createAppointment);
 
-// Patient views their appointments
-router.get('/my', verifyToken, getAppointmentsByUser);
-
-// Admin views all appointments
-router.get('/admin', verifyToken, getAllAppointmentsForAdmin);
+// GET: get all appointments for logged-in nutritionist
+router.get('/nutritionist', verifyToken, getAppointmentsForNutritionist);
 
 module.exports = router;

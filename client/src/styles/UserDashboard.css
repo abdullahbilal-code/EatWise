@@ -1,0 +1,119 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f7f9fc;
+  padding: 30px;
+}
+
+.dashboard-form {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  width: 400px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-heading {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.logout-button {
+  background-color: #ff4d4d;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  float: right;
+  margin-top: -10px;
+}
+
+.dashboard-form label {
+  font-weight: 500;
+  margin-top: 15px;
+}
+
+.dashboard-form input,
+.dashboard-form select,
+.dashboard-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.dashboard-submit {
+  margin-top: 20px;
+  background-color: #00a86b;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.dashboard-message {
+  color: green;
+  margin-top: 15px;
+  font-weight: 500;
+}
+
+/* Availability Section */
+
+.availability-section {
+  margin-top: 40px;
+  width: 400px;
+  background-color: #eef3f7;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.availability-item {
+  background-color: #fff;
+  padding: 15px;
+  margin-top: 10px;
+  border-left: 5px solid #00a86b;
+  border-radius: 5px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.availability-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}

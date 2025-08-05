@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({
-  patient: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -12,23 +12,24 @@ const appointmentSchema = new mongoose.Schema({
     required: true
   },
   date: {
-    type: String, // e.g., '2025-07-22'
+    type: Date,
     required: true
   },
   time: {
-    type: String, // e.g., '10:00'
+    type: String,
     required: true
   },
-  details: {
-    biologicalInfo: String,
-    nutritionGoal: String,
-    notes: String
+  purpose: {
+    type: String,
+    required: true
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'rejected'],
+    enum: ['pending', 'confirmed', 'cancelled'],
     default: 'pending'
   }
-}, { timestamps: true });
+}, {
+  timestamps: true
+});
 
 module.exports = mongoose.model('Appointment', appointmentSchema);

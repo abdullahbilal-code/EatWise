@@ -1,0 +1,59 @@
+.nutri-dashboard-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.user-table,
+.proposal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.user-table th,
+.user-table td,
+.proposal-table th,
+.proposal-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.user-table th,
+.proposal-table th {
+  background-color: #f4f4f4;
+}
+
+.proposal-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.proposal-form select,
+.proposal-form input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.proposal-form button {
+  padding: 8px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.proposal-form button:hover {
+  background: #0056b3;
+}
+
+.message {
+  color: green;
+  margin-bottom: 10px;
+}
