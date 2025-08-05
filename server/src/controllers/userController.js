@@ -113,7 +113,8 @@ exports.updateUserDetails = async (req, res) => {
     const { goal, weight, height, disease, comments } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
-      user.userId,      {
+      user.userId,
+      {
         goal,
         weight,
         height,
@@ -125,10 +126,7 @@ exports.updateUserDetails = async (req, res) => {
 
     console.log(req.body);
     console.log('User Updated', updatedUser);
-    console.log('User ID:', userId);
-    // if (!updatedUser) {
-    //   return res.status(404).json({ message: 'User not found' });
-    // }
+    console.log('User ID:', user.userId);
 
     res.json({ message: 'Details updated successfully', user: updatedUser });
   } catch (error) {
