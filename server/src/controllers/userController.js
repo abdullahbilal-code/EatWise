@@ -58,18 +58,24 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    console.log('User logged in:', user._id, user.role);
+    console.log('User logged in:', user._id.toString(), user.role);
 
     // If user is a nutritionist, allow login
-    if (user.role !== 'nutritionist') {
-      return res.status(403).json({ error: 'Access denied: Nutritionist only' });
-    }
+    // if (user.role !== 'nutritionist') {
+    //   return res.status(403).json({ error: 'Access denied: Nutritionist only' });
+    // }
+
     // Generate JWT
+    // const token = jwt.sign(
+    //   { userId: user._id, role: user.role },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: '1h' }
+    // );
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+    { userId: user._id.toString(), role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    { expiresIn: '1h' }
+);
 
     res.json({ token, user: { id: user._id, role: user.role, name: user.firstName } });
 
@@ -103,12 +109,11 @@ exports.getUserProfile = async (req, res) => {
 //Update user details
 exports.updateUserDetails = async (req, res) => {
   try {
-    const userId = req.userId; // comes from verifyToken middleware
+    const user = req.user; // comes from verifyToken middleware
     const { goal, weight, height, disease, comments } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
+      user.userId,      {
         goal,
         weight,
         height,
@@ -121,9 +126,9 @@ exports.updateUserDetails = async (req, res) => {
     console.log(req.body);
     console.log('User Updated', updatedUser);
     console.log('User ID:', userId);
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    // if (!updatedUser) {
+    //   return res.status(404).json({ message: 'User not found' });
+    // }
 
     res.json({ message: 'Details updated successfully', user: updatedUser });
   } catch (error) {
