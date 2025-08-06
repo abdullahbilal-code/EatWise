@@ -2,24 +2,28 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log (authHeader)
-
-  if (!authHeader || !authHeader.startsWith('Bearer '))
-    return res.status(401).json({ message: 'No token provided' });
-
-  const token = authHeader.split(' ')[1];
-  console.log(token);
-
-  if (!token) return res.status(401).json({ message: 'No token provided' });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
 
-    req.user = decoded;  // Contains userId and role
-    console.log(decoded, ' decoded');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Token verification:', {
+      userId: decoded.userId,
+      role: decoded.role
+    });
+
+    req.user = {
+      userId: decoded.userId,
+      role: decoded.role
+    };
+    
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Invalid token' });
+    console.error('Token verification failed:', err);
+    return res.status(401).json({ error: 'Invalid token' });
   }
 };
  

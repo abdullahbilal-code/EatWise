@@ -11,8 +11,12 @@ const Dashboard = () => {
     comments: '',
   });
 
-  const [availabilityList, setAvailabilityList] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -69,78 +73,97 @@ const Dashboard = () => {
     }
   };
 
-  const fetchAvailability = async () => {
+  const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/availability', {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch('http://localhost:5000/api/appointments/user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      const data = await res.json();
-      if (res.ok) {
-        setAvailabilityList(data);
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Fetched appointments:', data.appointments); // Debug log
+        if (Array.isArray(data.appointments)) {
+          setAppointments(data.appointments);
+        } else {
+          console.error('Appointments data is not an array:', data);
+          setAppointments([]);
+        }
+      } else {
+        console.error('Failed to fetch appointments:', data.error);
       }
     } catch (err) {
-      console.error('Error fetching availability:', err);
+      console.error('Error fetching appointments:', err);
     }
   };
 
-  const handleConfirm = async (id) => {
+  const handleAppointmentAction = async (appointmentId, action) => {
+    if (!appointmentId) {
+      console.error('No appointment ID provided');
+      setMessage('Error: Invalid appointment ID');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/availability/${id}/confirm`, {
+      console.log('Appointment Action Details:', {
+        appointmentId,
+        action,
+        url: `http://localhost:5000/api/appointments/${appointmentId}`
+      });
+      
+      // Try PATCH first, fallback to PUT if PATCH fails
+      let response = await fetch(`http://localhost:5000/api/appointments/${appointmentId}/${action}`, {
         method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: `${action}ed`
+        })
       });
-
-      if (res.ok) {
-        setAvailabilityList((prev) =>
-          prev.map((item) => (item._id === id ? { ...item, status: 'confirmed' } : item))
-        );
+      
+      const data = await response.json();
+      console.log('Server response:', data);
+      
+      if (response.ok) {
+        await fetchAppointments(); // Refresh appointments after action
+        setMessage(`Appointment ${action}ed successfully`);
+      } else {
+        const errorMsg = data.error || data.message || `Failed to ${action} appointment`;
+        console.error('Error response:', errorMsg);
+        setMessage(errorMsg);
       }
     } catch (err) {
-      console.error('Error confirming availability:', err);
+      console.error(`Error ${action}ing appointment:`, err);
+      setMessage(`Error: Could not ${action} appointment. Please try again.`);
     }
   };
 
-  const handleCancel = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/availability/${id}/cancel`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
-      if (res.ok) {
-        setAvailabilityList((prev) =>
-          prev.map((item) => (item._id === id ? { ...item, status: 'cancelled' } : item))
-        );
-      }
-    } catch (err) {
-      console.error('Error cancelling availability:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchAvailability();
-  }, []);
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-form">
-        <div className="dashboard-header">
-          <h2 className="dashboard-heading">User Dashboard</h2>
-          <button onClick={handleLogout} className="logout-button">Logout</button>
-        </div>
+    
+      <div className="dashboard-header">
+        <h2 className="dashboard-heading">User Dashboard</h2>
+        <button onClick={handleLogout} className="logout-button">Logout</button>
+      </div>
+      
+      <div className="dashboard-content">
+        <div className="dashboard-form">
+          <h3>Update Profile</h3>
+          <form onSubmit={handleSubmit}>
+            <label>Goal</label>
+            <select name="goal" value={formData.goal} onChange={handleChange} required>
+              <option value="">Select Goal</option>
+              <option value="Lose">Lose Weight</option>
+              <option value="Gain">Gain Weight</option>
+            </select>
 
-        <form onSubmit={handleSubmit}>
-          <label>Goal</label>
-          <select name="goal" value={formData.goal} onChange={handleChange} required>
-            <option value="">Select Goal</option>
-            <option value="Loose">Loose Weight</option>
-            <option value="Gain">Gain Weight</option>
-          </select>
-
-          <label>Weight (KGs)</label>
+            <label>Weight (KGs)</label>
           <input
             type="number"
             name="weight"
@@ -194,28 +217,52 @@ const Dashboard = () => {
         </form>
       </div>
 
-      <div className="availability-section">
-        <h3>Nutritionist Availability</h3>
-        {availabilityList.length === 0 ? (
-          <p>No availability requests yet.</p>
+      <div className="appointments-section">
+        <h3>My Appointments</h3>
+        {appointments.length === 0 ? (
+          <p>No appointments found.</p>
         ) : (
-          availabilityList.map((item) => (
-            <div key={item._id} className="availability-item">
-              <p><strong>Nutritionist:</strong> {item.nutritionistName}</p>
-              <p><strong>Date:</strong> {item.date}</p>
-              <p><strong>Time:</strong> {item.time}</p>
-              <p><strong>Status:</strong> {item.status}</p>
-              {item.status === 'pending' && (
-                <div className="availability-actions">
-                  <button onClick={() => handleConfirm(item._id)} className="confirm-btn">Confirm</button>
-                  <button onClick={() => handleCancel(item._id)} className="cancel-btn">Cancel</button>
+          <div className="appointments-list">
+            {appointments.map((appointment) => (
+              <div key={appointment._id} className="appointment-card">
+                <div className="appointment-details">
+                  <p><strong>Date:</strong> {new Date(appointment.date).toLocaleDateString()}</p>
+                  <p><strong>Time:</strong> {appointment.time}</p>
+                  <p><strong>Purpose:</strong> {appointment.purpose}</p>
+                  <p><strong>Status:</strong> {appointment.status}</p>
+                  {appointment.nutritionist && (
+                    <p><strong>Nutritionist:</strong> {appointment.nutritionist.firstName} {appointment.nutritionist.lastName}</p>
+                  )}
                 </div>
-              )}
-            </div>
-          ))
+                {appointment.status === 'pending' && (
+                  <div className="appointment-actions">
+                    <button
+                      onClick={() => {
+                        console.log('Appointment ID:', appointment._id); // Debug log
+                        handleAppointmentAction(appointment._id, 'confirm');
+                      }}
+                      className="confirm-btn"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => {
+                        console.log('Appointment ID:', appointment._id); // Debug log
+                        handleAppointmentAction(appointment._id, 'cancel');
+                      }}
+                      className="cancel-btn"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
+  </div>
   );
 };
 

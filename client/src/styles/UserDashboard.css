@@ -1,20 +1,30 @@
 .dashboard-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
   background-color: #f7f9fc;
   padding: 30px;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 20px;
 }
 
 .dashboard-form {
   background-color: #fff;
   border-radius: 10px;
   padding: 30px;
-  width: 400px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  position: relative;
+}
+
+.appointments-section {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-header {
@@ -75,29 +85,59 @@
   font-weight: 500;
 }
 
-/* Availability Section */
-
-.availability-section {
-  margin-top: 40px;
-  width: 400px;
-  background-color: #eef3f7;
-  padding: 20px;
-  border-radius: 10px;
+.appointments-list {
+  display: grid;
+  gap: 15px;
+  margin-top: 15px;
 }
 
-.availability-item {
+.appointment-card {
   background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   padding: 15px;
-  margin-top: 10px;
-  border-left: 5px solid #00a86b;
-  border-radius: 5px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
 }
 
-.availability-actions {
-  margin-top: 10px;
+.appointment-card:hover {
+  transform: translateY(-2px);
+}
+
+.appointment-details {
+  margin-bottom: 15px;
+}
+
+.appointment-details p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.appointment-actions {
   display: flex;
   gap: 10px;
+}
+
+.confirm-btn, .cancel-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.confirm-btn {
+  background-color: #00a86b;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.confirm-btn:hover, .cancel-btn:hover {
+  opacity: 0.9;
 }
 
 .confirm-btn {
@@ -116,4 +156,45 @@
   padding: 6px 12px;
   border-radius: 5px;
   cursor: pointer;
+}
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.dashboard-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.appointments-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
 }

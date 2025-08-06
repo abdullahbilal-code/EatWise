@@ -1,158 +1,165 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Register.css';
 
-function Register() {
+const Register = () => {
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    gender: '',
     email: '',
-    contact: '',
-    role: '',
     password: '',
-    confirmPassword: ''
+    contact: '',
+    role: 'regular'
   });
-
-  const [message, setMessage] = useState('');
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value
-    }));
-
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: ''
-    }));
-  };
-
-  const validate = () => {
-    let newErrors = {};
-    const emailRegex = /^[^\s@]+@gmail\.com$/;
-    const contactRegex = /^\+353\d{9}$/;
-
-    if (!form.firstName) newErrors.firstName = 'First name is required';
-    if (!form.lastName) newErrors.lastName = 'Last name is required';
-    if (!form.gender) newErrors.gender = 'Gender is required';
-    if (!form.email || !emailRegex.test(form.email)) newErrors.email = 'Valid Gmail is required';
-    if (!form.contact || !contactRegex.test(form.contact)) newErrors.contact = 'contact must start with +353 and have 13 characters';
-    if (!form.role) newErrors.role = 'User role is required';
-    if (!form.password) newErrors.password = 'Password is required';
-    if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-
-    return newErrors;
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    const newErrors = validate();
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
 
     try {
       const res = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          gender: form.gender,
-          email: form.email.toLowerCase(),
-          contact: form.contact,
-          role: form.role,
-          password: form.password
-        })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
+
       if (res.ok) {
-        setMessage('Registered successfully!');
-        setForm({
-          firstName: '',
-          lastName: '',
-          gender: '',
-          email: '',
-          contact: '',
-          role: '',
-          password: '',
-          confirmPassword: ''
-        });
+        setSuccess('Registration successful! Redirecting to login...');
         setTimeout(() => {
           navigate('/login');
-        }, 1000);
+        }, 2000);
       } else {
-        setMessage(data.msg || data.error || 'Something went wrong');
+        setError(data.error || 'Registration failed');
       }
     } catch (err) {
-      console.error(err);
-      setMessage('Network or server error');
+      setError('Server error. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="register-container">
-      <form onSubmit={handleSubmit} className="register-form">
-        <h2 className="register-heading">EatWise Registeration </h2>
+    <div className="auth-wrapper">
+      <div className="register-container">
+        <div className="register-header">
+          <h2>Create Account</h2>
+          <p>Join EatWise to start your healthy journey</p>
+        </div>
 
-        <p>First Name</p>   
-        <input name="firstName" placeholder="First Name" value={form.firstName} onChange={handleChange} className="register-input" />
-        {errors.firstName && <p className="error">{errors.firstName}</p>}
-        
-        <p>Last Name</p>
-        <input name="lastName" placeholder="Last Name" value={form.lastName} onChange={handleChange} className="register-input" />
-        {errors.lastName && <p className="error">{errors.lastName}</p>}
-        
-        <p>Select Gender</p>
-        <select name="gender" value={form.gender} onChange={handleChange} className="register-input">
-          <option value="">Select Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Prefer not to say">Prefer not to say</option>
-        </select>
-        {errors.gender && <p className="error">{errors.gender}</p>}
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
-        <p>Enter Your Valid Email </p>
-        <input type="email" name="email" placeholder="Enter Gmail" value={form.email} onChange={handleChange} className="register-input" />
-        {errors.email && <p className="error">{errors.email}</p>}
+        <form onSubmit={handleSubmit} className="register-form">
+          <div className="form-group">
+            <label htmlFor="firstName">First Name</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+              placeholder="Enter your first name"
+            />
+          </div>
 
-        <p>Enter Your Valid Contact Number </p>
-        <input name="contact" placeholder="Contact (+353...)" value={form.contact} onChange={handleChange} className="register-input" />
-        {errors.contact && <p className="error">{errors.contact}</p>}
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+              placeholder="Enter your last name"
+            />
+          </div>
 
-        <p>Select Your Role</p>
-        <select name="role" value={form.role} onChange={handleChange} className="register-input">
-          <option value="">Select Role</option>
-          <option value="regular">Regular User</option>
-          <option value="nutritionist">Nutritionist</option>
-        </select>
-        {errors.role && <p className="error">{errors.role}</p>}
-        
-        <p>Enter Your Password </p>
-        <input type="password" name="password" placeholder="Enter Password" value={form.password} onChange={handleChange} className="register-input" />
-        {errors.password && <p className="error">{errors.password}</p>}
-        
-        <p>Re Type Your Password </p>
-        <input type="password" name="confirmPassword" placeholder="Re-enter Password" value={form.confirmPassword} onChange={handleChange} className="register-input" />
-        {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
-        
-       
-        <button type="submit" className="register-button">Register</button>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Enter your email"
+            />
+          </div>
 
-        {message && <p className="register-message">{message}</p>}
-      </form>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Create a password"
+              minLength="6"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="contact">Contact Number</label>
+            <input
+              type="tel"
+              id="contact"
+              name="contact"
+              value={formData.contact}
+              onChange={handleChange}
+              required
+              placeholder="Enter your contact number"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="role">Register as</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+            >
+              <option value="regular">Regular User</option>
+              <option value="nutritionist">Nutritionist</option>
+            </select>
+          </div>
+
+          <button 
+            type="submit" 
+            className="register-btn" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Registering...' : 'Register'}
+          </button>
+        </form>
+
+        <div className="login-link">
+          <p>Already have an account? <Link to="/login">Login here</Link></p>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default Register;

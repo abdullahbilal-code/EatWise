@@ -1,43 +1,76 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/NutriDashboard.css';
-const baseURL = process.env.REACT_APP_API_URL;
 
 
 const NutriDashboard = () => {
   const [userDetails, setUserDetails] = useState([]);
   const [proposals, setProposals] = useState([]);
-  const [formState, setFormState] = useState({ date: '', time: '', purpose: '', userId: '' });
+  const [formState, setFormState] = useState({ 
+    date: '', 
+    time: '', 
+    purpose: '', 
+    userId: '',
+    userName: '' 
+  });
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const token = localStorage.getItem('token');
 
-  // Fetch all user details submitted
-  useEffect(() => {
   const fetchData = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem('token');
 
-      // Get all users with their submitted details
+      // Get all regular users with their submitted details
       const usersRes = await fetch('http://localhost:5000/api/users/all-profiles', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const users = await usersRes.json();
-      setUserDetails(users);
+      const userData = await usersRes.json();
+      
+      if (!usersRes.ok) {
+        throw new Error(userData.error || 'Failed to fetch user profiles');
+      }
 
-      // Get current nutritionist's availability or appointment proposals
+      // Transform height data for all users
+      const regularUsers = (userData || []).map(user => ({
+        ...user,
+        height: typeof user.height === 'string' ? user.height : 
+               user.height && (user.height.feet || user.height.inches) ? 
+               `${user.height.feet || 0}ft ${user.height.inches || 0}in` : 'N/A',
+        weight: user.weight ? `${user.weight} kg` : 'N/A',
+        goal: user.goal || 'Not specified',
+        disease: user.disease || 'None reported',
+        comments: user.comments || 'No comments'
+      }));
+
+      setUserDetails(regularUsers);
+
+      // Get current nutritionist's appointments
       const proposalsRes = await fetch('http://localhost:5000/api/appointments/nutritionist', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const proposals = await proposalsRes.json();
-      setProposals(proposals);
+      const appointmentsData = await proposalsRes.json();
+      
+      if (!proposalsRes.ok) {
+        throw new Error(appointmentsData.error || 'Failed to fetch appointments');
+      }
 
+      setProposals(appointmentsData.appointments || []);
     } catch (err) {
       console.error('Error fetching data:', err);
+      setError(err.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
     }
   };
 
-  fetchData();
-}, []);
+  // Fetch all user details submitted
+  useEffect(() => {
+    fetchData();
+  }, []);
 
 
   const handleChange = e => {
@@ -49,6 +82,11 @@ const NutriDashboard = () => {
   e.preventDefault();
   setMessage('');
   try {
+    if (!formState.userId || !formState.date || !formState.time || !formState.purpose) {
+      setMessage('Please fill all required fields');
+      return;
+    }
+
     const res = await fetch('http://localhost:5000/api/appointments', {
       method: 'POST',
       headers: {
@@ -59,141 +97,245 @@ const NutriDashboard = () => {
         user: formState.userId,
         date: formState.date,
         time: formState.time,
-        purpose: formState.purpose
+        purpose: formState.purpose,
+        nutritionist: localStorage.getItem('userId') // Add nutritionist ID
       })
     });
 
     const data = await res.json();
+    
     if (res.ok) {
-      setMessage('Proposal saved');
-      setFormState({ date: '', time: '', purpose: '', userId: '' });
-
-      const updated = await fetch('http://localhost:5000/api/appointments/nutritionist', {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
-
-      setProposals(updated);
+      setMessage('Appointment proposed successfully');
+      setFormState({ date: '', time: '', purpose: '', userId: '', userName: '' });
+      // Refresh appointments list
+      await fetchData();
     } else {
-      setMessage(data.message || 'Error saving proposal');
+      console.error('Server response:', data);
+      setMessage(data.error || data.message || 'Error saving proposal');
     }
   } catch (err) {
-    console.error(err);
-    setMessage('Server error');
+    console.error('Error creating appointment:', err);
+    setMessage('Server error: Could not create appointment');
   }
+};
+
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId');
+  window.location.href = '/login';
 };
 
   return (
     <div className="nutri-dashboard-container">
-      <h2>Nutritionist Dashboard</h2>
+      <div className="dashboard-header">
+        <h2>Nutritionist Dashboard</h2>
+        <div className="dashboard-actions">
+          <button onClick={() => fetchData()} className="refresh-btn">
+            Refresh Data
+          </button>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
       <section className="user-section">
-        <h3>Submitted User Details</h3>
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Contact</th>
-              <th>Goal</th>
-              <th>Weight</th>
-              <th>Height</th>
-              <th>Disease</th>
-              <th>Comments</th>
-              <th>Propose Slot</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userDetails.map(u => (
-              <tr key={u._id}>
-                <td>{u?.firstName} {u?.lastName}</td>
-                <td>{u?.contact}</td>
-                <td>{u?.goal}</td>
-                <td>{u?.weight}</td>
-                <td>{u?.height.feet}ft {u?.height.inches}in</td>
-                <td>{u?.disease}</td>
-                <td>{u?.comments}</td>
-                <td>
-                  <button onClick={() => setFormState({ ...formState, userId: u._id })}>
-                    Propose
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <h3>User Profiles</h3>
+        {loading ? (
+          <div className="loading">Loading user profiles...</div>
+        ) : userDetails.length === 0 ? (
+          <div className="no-data">No user profiles available</div>
+        ) : (
+          <div className="table-container">
+            <table className="user-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Goal</th>
+                  <th>Weight</th>
+                  <th>Height</th>
+                  <th>Medical Info</th>
+                  <th>Comments</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userDetails.map(user => (
+                  <tr key={user._id}>
+                    <td>{user.firstName} {user.lastName}</td>
+                    <td>
+                      <div>{user.email}</div>
+                      <div>{user.contact}</div>
+                    </td>
+                    <td>{user.goal}</td>
+                    <td>{user.weight}</td>
+                    <td>{user.height}</td>
+                    <td>{user.disease}</td>
+                    <td>{user.comments}</td>
+                    <td>
+                      <button 
+                        onClick={() => {
+                          setFormState(prev => ({ 
+                            ...prev, 
+                            userId: user._id,
+                            userName: `${user.firstName} ${user.lastName}`
+                          }));
+                          document.querySelector('.proposal-form-section').scrollIntoView({ 
+                            behavior: 'smooth' 
+                          });
+                        }}
+                        className="propose-btn"
+                      >
+                        Propose Slot
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="proposal-form-section">
         <h3>Propose Appointment Slot</h3>
-        {message && <p className="message">{message}</p>}
+        {message && (
+          <div className={`message ${message.includes('error') ? 'error' : 'success'}`}>
+            {message}
+          </div>
+        )}
         <form onSubmit={handlePropose} className="proposal-form">
-          <select
-            name="userId"
-            value={formState.userId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select User</option>
-            {userDetails.map(u => (
-              <option key={u._id} value={u._id}>
-                {u.firstName} {u.lastName}
-              </option>
-            ))}
-          </select>
+          <div className="form-group">
+            <label>Selected User</label>
+            {formState.userId ? (
+              <div className="selected-user">
+                {formState.userName || userDetails.find(u => u._id === formState.userId)?.firstName}
+                <button 
+                  type="button" 
+                  onClick={() => setFormState(prev => ({ ...prev, userId: '', userName: '' }))}
+                  className="clear-btn"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <select
+                name="userId"
+                value={formState.userId}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select User</option>
+                {userDetails.map(u => (
+                  <option key={u._id} value={u._id}>
+                    {u.firstName} {u.lastName}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
 
-          <input
-            type="date"
-            name="date"
-            value={formState.date}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label>Appointment Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formState.date}
+              onChange={handleChange}
+              min={new Date().toISOString().split('T')[0]}
+              required
+            />
+          </div>
 
-          <input
-            type="text"
-            name="time"
-            placeholder="e.g., 10:00 AM - 11:00 AM"
-            value={formState.time}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label>Appointment Time</label>
+            <input
+              type="time"
+              name="time"
+              value={formState.time}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <input
-            type="text"
-            name="purpose"
-            placeholder="Purpose"
-            value={formState.purpose}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <label>Purpose of Appointment</label>
+            <textarea
+              name="purpose"
+              value={formState.purpose}
+              onChange={handleChange}
+              placeholder="Enter the purpose of the appointment"
+              required
+            />
+          </div>
 
-          <button type="submit">Save Proposal</button>
+          <div className="form-actions">
+            <button type="submit" className="submit-btn">
+              Send Appointment Proposal
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setFormState({ date: '', time: '', purpose: '', userId: '', userName: '' })}
+              className="reset-btn"
+            >
+              Reset Form
+            </button>
+          </div>
         </form>
       </section>
 
       <section className="proposals-section">
-        <h3>Your Proposals</h3>
-        <table className="proposal-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Purpose</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {proposals.map(p => (
-              <tr key={p._id}>
-                <td>{p.user.firstName} {p.user.lastName}</td>
-                <td>{new Date(p.date).toLocaleDateString()}</td>
-                <td>{p.time}</td>
-                <td>{p.purpose}</td>
-                <td>{p.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <h3>Appointment Proposals</h3>
+        {loading ? (
+          <div className="loading">Loading appointments...</div>
+        ) : proposals.length === 0 ? (
+          <div className="no-data">No appointments proposed yet</div>
+        ) : (
+          <div className="table-container">
+            <table className="proposal-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Purpose</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proposals.map(p => (
+                  <tr key={p._id} className={`status-${p.status}`}>
+                    <td>
+                      {p.user ? (
+                        <>
+                          <div>{p.user.firstName} {p.user.lastName}</div>
+                          <div className="user-contact">{p.user.email}</div>
+                        </>
+                      ) : (
+                        'User not found'
+                      )}
+                    </td>
+                    <td>{new Date(p.date).toLocaleDateString()}</td>
+                    <td>{p.time}</td>
+                    <td>{p.purpose}</td>
+                    <td>
+                      <span className={`status-badge ${p.status}`}>
+                        {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );

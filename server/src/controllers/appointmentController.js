@@ -6,20 +6,34 @@ const User = require('../models/User');
 exports.createAppointment = async (req, res) => {
   try {
     const { user, date, time, purpose } = req.body;
-    const nutritionist = req.user.userId;
+    
+    if (!user || !date || !time || !purpose) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
-    const appointment = await Appointment.create({
+    const appointment = new Appointment({
       user,
-      nutritionist,
+      nutritionist: req.user.userId, // Get nutritionist ID from token
       date,
       time,
-      purpose
+      purpose,
+      status: 'pending'
     });
 
-    res.status(201).json(appointment);
+    await appointment.save();
+    
+    // Populate user details before sending response
+    const populatedAppointment = await Appointment.findById(appointment._id)
+      .populate('user', 'firstName lastName email')
+      .populate('nutritionist', 'firstName lastName');
+
+    res.status(201).json({
+      message: 'Appointment created successfully',
+      appointment: populatedAppointment
+    });
   } catch (err) {
     console.error('Error creating appointment:', err);
-    res.status(500).json({ message: 'Failed to create appointment' });
+    res.status(500).json({ error: 'Could not create appointment' });
   }
 };
 
@@ -28,13 +42,17 @@ exports.createAppointment = async (req, res) => {
 // @access Nutritionist
 exports.getNutritionistAppointments = async (req, res) => {
   try {
-    const nutritionist = req.user.userId;
-    const appointments = await Appointment.find({ nutritionist })
-      .populate('user', 'firstName lastName contact');
-    res.json(appointments);
+    const appointments = await Appointment.find({ nutritionist: req.user.userId })
+      .populate('user', 'firstName lastName email phone')
+      .sort({ date: 1, time: 1 });
+
+    res.json({ 
+      message: 'Appointments fetched successfully',
+      appointments 
+    });
   } catch (err) {
     console.error('Error fetching nutritionist appointments:', err);
-    res.status(500).json({ message: 'Failed to fetch appointments' });
+    res.status(500).json({ error: 'Failed to fetch appointments' });
   }
 };
 
@@ -43,10 +61,14 @@ exports.getNutritionistAppointments = async (req, res) => {
 // @access Authenticated user
 exports.getUserAppointments = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const appointments = await Appointment.find({ user: userId })
-      .populate('nutritionist', 'firstName lastName contact');
-    res.json(appointments);
+    const appointments = await Appointment.find({ user: req.user.userId })
+      .populate('nutritionist', 'firstName lastName email phone')
+      .sort({ date: 1, time: 1 });
+
+    res.json({ 
+      message: 'Appointments fetched successfully',
+      appointments 
+    });
   } catch (err) {
     console.error('Error fetching user appointments:', err);
     res.status(500).json({ message: 'Failed to fetch appointments' });
@@ -62,23 +84,26 @@ exports.updateAppointmentStatus = async (req, res) => {
     const { status } = req.body; // expected 'confirmed' or 'cancelled'
 
     if (!['confirmed', 'cancelled'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status' });
+      return res.status(400).json({ error: 'Invalid status' });
     }
 
     const appointment = await Appointment.findById(id);
     if (!appointment) {
-      return res.status(404).json({ message: 'Appointment not found' });
+      return res.status(404).json({ error: 'Appointment not found' });
     }
 
     // Only the user (not nutritionist) can confirm/cancel their own appointments
     if (req.user.userId !== appointment.user.toString()) {
-      return res.status(403).json({ message: 'Access denied' });
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     appointment.status = status;
     await appointment.save();
 
-    res.json(appointment);
+    res.json({ 
+      message: `Appointment ${status} successfully`,
+      appointment 
+    });
   } catch (err) {
     console.error('Error updating appointment:', err);
     res.status(500).json({ message: 'Failed to update appointment' });
