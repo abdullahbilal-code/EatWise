@@ -168,7 +168,8 @@ function Register() {
         <input type="password" name="confirmPassword" placeholder="Re-enter Password" value={form.confirmPassword} onChange={handleChange} className="register-input" />
         {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
         
-        <button type="submit" className="register-button">Register</button>
+        {/* <button type="submit" className="register-button">Register</button> */}
+         <button type="submit" className="register-btn">Register</button>
 
         {message && <p className="register-message">{message}</p>}
       </form>

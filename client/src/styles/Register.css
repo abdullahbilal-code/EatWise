@@ -1,27 +1,21 @@
-.auth-wrapper {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background-color: #f8f9fa;
-}
-
 .register-container {
-  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   max-width: 500px;
+  margin: 40px auto;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  margin: 0 auto;
 }
 
 .register-header {
   text-align: center;
   margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
 }
 
 .register-header h2 {
@@ -30,49 +24,18 @@
   margin-bottom: 0.5rem;
 }
 
-.register-header p {
-  color: #666;
-  margin: 0;
-}
-
 .register-form {
   display: flex;
   flex-direction: column;
+  
   gap: 1.2rem;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 100%;
+  max-width: 400px;
   box-sizing: border-box;
-}
-
-/* Remove duplicate padding and width from register-form */
-.register-form {
-  background-color: transparent;
-  padding: 0;
-  border-radius: 0;
-  box-shadow: none;
-  max-width: none;
-}
-
-.form-group {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-/* Center the inputs */
-.register-form input,
-.register-form select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-  box-sizing: border-box;
-}
-
-/* Remove duplicate margin-bottom from inputs */
-.register-form input,
-.register-form select {
-  margin-bottom: 0;
 }
 
 .register-form h2 {
@@ -148,11 +111,11 @@
 
 .register-btn {
   background-color: #4CAF50;
-  color: white;
+  color: rgb(220, 227, 219);
   padding: 12px;
-  border: none;
+  border:  2px solid #4CAF50;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 2rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -172,13 +135,7 @@
 .login-link {
   text-align: center;
   margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-}
-
-.login-link p {
   color: #666;
-  margin: 0;
 }
 
 .login-link a {
