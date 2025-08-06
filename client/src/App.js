@@ -42,7 +42,7 @@ function App() {
 
         {/* Regular User Dashboard */}
         <Route
-          path="/userdashboard"
+          path="/user-dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
@@ -52,7 +52,7 @@ function App() {
 
         {/* Nutritionist Dashboard */}
         <Route
-          path="/nutridashboard"
+          path="/nutri-dashboard"
           element={
             <ProtectedRoute>
               <NutriDashboard />

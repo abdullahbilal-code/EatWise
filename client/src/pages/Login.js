@@ -4,10 +4,12 @@ import '../styles/Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,22 +27,32 @@ const Login = () => {
       const res = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
 
       const data = await res.json();
 
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userId', data.userId);
-        navigate(data.role === 'nutritionist' ? '/nutri-dashboard' : '/user-dashboard');
-      } else {
-        setError(data.error || 'Login failed');
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed');
       }
+
+      // Store token, role, etc.
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userRole', data.user.role);
+      localStorage.setItem('userName', data.user.name);
+
+      // Optional: store expiration (e.g. 1 hour)
+      const expiresAt = Date.now() + 60 * 60 * 1000;
+      localStorage.setItem('expiresAt', expiresAt.toString());
+
+      // Redirect based on role
+      navigate(data.user.role === 'nutritionist' ? '/nutri-dashboard' : '/user-dashboard');
+
     } catch (err) {
-      setError('Server error. Please try again later.');
+      setError('Invalid credentials or server error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -83,11 +95,7 @@ const Login = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="login-btn" 
-            disabled={isLoading}
-          >
+          <button type="submit" className="login-btn" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>

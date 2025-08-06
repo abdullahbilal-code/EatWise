@@ -263,17 +263,38 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .proposal-form {
     grid-template-columns: 1fr;
   }
-  
-  .form-actions {
-    flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
   }
   
-  .submit-btn,
-  .reset-btn {
+  .user-table,
+  .proposal-table {
+    min-width: 600px;
+  }
+  
+  .dashboard-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .dashboard-actions button {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .proposal-form-section {
+    padding: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 0.75rem;
   }
 }

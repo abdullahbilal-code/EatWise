@@ -2,14 +2,15 @@
   min-height: 100vh;
   background-color: #f7f9fc;
   padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .dashboard-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
+  align-items: start;
   padding-top: 20px;
 }
 
@@ -31,6 +32,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
 }
 
 .dashboard-heading {
@@ -157,44 +161,42 @@
   border-radius: 5px;
   cursor: pointer;
 }
-.dashboard-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
 
-.dashboard-header {
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #eee;
-}
-
-.dashboard-content {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  align-items: start;
-}
-
-.dashboard-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.appointments-section {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+@media (max-width: 992px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .appointments-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .appointment-card {
+    padding: 0.75rem;
+  }
+  
+  .appointment-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .appointment-actions button {
+    width: 100%;
   }
 }
